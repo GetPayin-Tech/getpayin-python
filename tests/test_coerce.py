@@ -1,8 +1,8 @@
 import math
 import unittest
 
-from paylink.coerce import coerce_to_string
-from paylink.errors import PaylinkError
+from getpayin.coerce import coerce_to_string
+from getpayin.errors import GetpayinError
 
 
 class CoerceTest(unittest.TestCase):
@@ -26,11 +26,11 @@ class CoerceTest(unittest.TestCase):
         self.assertEqual(coerce_to_string(250.5), "250.5")
 
     def test_non_finite_float_raises(self) -> None:
-        with self.assertRaises(PaylinkError):
+        with self.assertRaises(GetpayinError):
             coerce_to_string(math.inf)
 
     def test_unsupported_type_raises(self) -> None:
-        with self.assertRaises(PaylinkError):
+        with self.assertRaises(GetpayinError):
             coerce_to_string(["a"])
 
 

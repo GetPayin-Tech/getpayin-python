@@ -28,7 +28,7 @@ __all__ = [
 
 
 class WebhookEventType:
-    """Every webhook event type PayLink can deliver."""
+    """Every webhook event type GetPayIn can deliver."""
 
     INVOICE_PAID = "invoice.paid"
     INVOICE_NOT_PAID = "invoice.not_paid"

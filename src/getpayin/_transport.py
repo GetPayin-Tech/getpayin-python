@@ -1,7 +1,7 @@
 """Default HTTP transport, built on the standard library (no dependencies).
 
-Any object matching the :data:`paylink.config.Transport` signature can be passed
-to :class:`~paylink.client.PaylinkClient` instead — for a proxy-aware client, a
+Any object matching the :data:`getpayin.config.Transport` signature can be passed
+to :class:`~getpayin.client.GetpayinClient` instead — for a proxy-aware client, a
 connection-pooled session, or a mock in tests.
 """
 

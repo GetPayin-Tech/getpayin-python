@@ -29,9 +29,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   5xx, connection errors, timeouts), honoring `Retry-After`. Only replay-safe
   requests are retried — GETs, calls carrying an `Idempotency-Key`, and pure
   reads such as `payments.check_status`. Charges are never replayed.
-- Typed exception hierarchy (`PaylinkApiError` with `is_idempotency_conflict` /
+- Typed exception hierarchy (`GetpayinApiError` with `is_idempotency_conflict` /
   `is_rate_limited` / `is_forbidden` and `retry_after_seconds`).
 - Zero runtime dependencies (standard-library transport); custom transport
   injection for proxies, pooling, or tests.
-- `User-Agent: paylink-python/<version> python/<version>` on every request.
+- `User-Agent: getpayin-python/<version> python/<version>` on every request.
 - PEP 561 typed (`py.typed`).

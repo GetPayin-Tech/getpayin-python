@@ -1,4 +1,4 @@
-"""Official Python SDK for the PayLink / GetPayIn payment integration API.
+"""Official Python SDK for the GetPayIn / GetPayIn payment integration API.
 
 Wraps every integration endpoint (checkouts, payment operations, card tokens,
 recurring mandates) and computes the order-sensitive HMAC-SHA256 signatures for
@@ -9,14 +9,14 @@ signing secret must never reach a browser or mobile client.
 from __future__ import annotations
 
 from ._version import __version__
-from .client import PaylinkClient
+from .client import GetpayinClient
 from .config import HttpResponse, Transport
 from .errors import (
-    PaylinkApiError,
-    PaylinkConfigError,
-    PaylinkConnectionError,
-    PaylinkError,
-    PaylinkSignatureError,
+    GetpayinApiError,
+    GetpayinConfigError,
+    GetpayinConnectionError,
+    GetpayinError,
+    GetpayinSignatureError,
 )
 from .types import (
     CardInfo,
@@ -36,14 +36,14 @@ from .types import (
 
 __all__ = [
     "__version__",
-    "PaylinkClient",
+    "GetpayinClient",
     "HttpResponse",
     "Transport",
-    "PaylinkError",
-    "PaylinkConfigError",
-    "PaylinkApiError",
-    "PaylinkSignatureError",
-    "PaylinkConnectionError",
+    "GetpayinError",
+    "GetpayinConfigError",
+    "GetpayinApiError",
+    "GetpayinSignatureError",
+    "GetpayinConnectionError",
     "WebhookEvent",
     "WebhookEventType",
     "CreateInvoiceResult",

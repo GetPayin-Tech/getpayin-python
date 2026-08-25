@@ -12,8 +12,8 @@ import re
 import unittest
 from pathlib import Path
 
-from paylink import PaylinkClient
-from paylink._field_orders import (
+from getpayin import GetpayinClient
+from getpayin._field_orders import (
     CARD_CHARGE,
     CARD_REVOKE,
     CARD_TOKENIZE,
@@ -25,9 +25,9 @@ from paylink._field_orders import (
     PAYMENT_VOID,
     RECURRING_CREATE,
 )
-from paylink._sign_request import build_signed_body
-from paylink.signature import build_signature
-from paylink.webhooks import Webhooks
+from getpayin._sign_request import build_signed_body
+from getpayin.signature import build_signature
+from getpayin.webhooks import Webhooks
 
 FIXTURES = json.loads((Path(__file__).parent / "golden-signatures.json").read_text())
 
@@ -71,7 +71,7 @@ class GoldenSignatureTest(unittest.TestCase):
         This is what proves the field-order registry is correct: the SDK derives
         the same ordered values from a params object that the server does.
         """
-        from paylink._field_orders import VCC_CHARGE
+        from getpayin._field_orders import VCC_CHARGE
 
         specs = dict(ENDPOINT_SPECS, VCC_CHARGE=VCC_CHARGE)
 
@@ -102,7 +102,7 @@ class GoldenSignatureTest(unittest.TestCase):
             with self.subTest(case=case["name"]):
                 hash_token = case.get("hashToken", FIXTURES["hashToken"])
                 webhooks = Webhooks(
-                    PaylinkClient(public_token="p", hash_token=hash_token)._config
+                    GetpayinClient(public_token="p", hash_token=hash_token)._config
                 )
                 payload = dict(case["input"], signature=case["expected"])
                 event = webhooks.verify(payload)

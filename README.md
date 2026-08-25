@@ -1,11 +1,11 @@
-# paylink
+# getpayin
 
-[![CI](https://github.com/GetPayin-Tech/paylink-python/actions/workflows/ci.yml/badge.svg)](https://github.com/GetPayin-Tech/paylink-python/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/paylink.svg)](https://pypi.org/project/paylink/)
-[![Python](https://img.shields.io/pypi/pyversions/paylink.svg)](https://pypi.org/project/paylink/)
+[![CI](https://github.com/GetPayin-Tech/getpayin-python/actions/workflows/ci.yml/badge.svg)](https://github.com/GetPayin-Tech/getpayin-python/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/getpayin.svg)](https://pypi.org/project/getpayin/)
+[![Python](https://img.shields.io/pypi/pyversions/getpayin.svg)](https://pypi.org/project/getpayin/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-Official **server-side** Python SDK for the PayLink payment integration API. It
+Official **server-side** Python SDK for the GetPayIn payment integration API. It
 wraps every integration endpoint with an idiomatic, typed API and computes the
 order-sensitive HMAC-SHA256 signatures for you, so you never have to build them
 by hand.
@@ -28,24 +28,24 @@ by hand.
 ## Install
 
 ```bash
-pip install paylink
+pip install getpayin
 ```
 
 ## Quick start
 
 ```python
 import os
-from paylink import PaylinkClient
+from getpayin import GetpayinClient
 
-paylink = PaylinkClient(
-    public_token=os.environ["PAYLINK_PUBLIC_TOKEN"],
-    hash_token=os.environ["PAYLINK_HASH_TOKEN"],  # secret — server-side only
+getpayin = GetpayinClient(
+    public_token=os.environ["GETPAYIN_PUBLIC_TOKEN"],
+    hash_token=os.environ["GETPAYIN_HASH_TOKEN"],  # secret — server-side only
     # base_url defaults to https://pay.getpayin.com
     # timeout defaults to 30.0 seconds (per attempt)
     # max_retries defaults to 2 (set 0 to disable retries)
 )
 
-checkout = paylink.invoices.create(
+checkout = getpayin.invoices.create(
     first_name="John",
     last_name="Doe",
     email="john@example.com",
@@ -53,7 +53,7 @@ checkout = paylink.invoices.create(
     order_amount="250.00",  # pass amounts as strings to control the exact wire form
     currency="USD",
     redirection_url="https://shop.example.com/return",
-    webhook_url="https://shop.example.com/webhooks/paylink",
+    webhook_url="https://shop.example.com/webhooks/getpayin",
 )
 
 # Redirect the payer to the hosted checkout:
@@ -64,7 +64,7 @@ For an embedded checkout you can render inside your own page, pass `iframe=True`
 (sent in the request body but excluded from the signature, like `payment_mode`):
 
 ```python
-checkout = paylink.invoices.create(
+checkout = getpayin.invoices.create(
     first_name="John",
     last_name="Doe",
     email="john@example.com",
@@ -83,7 +83,7 @@ Then embed the returned checkout URL on your page. The `<iframe>` needs `allow="
 <script>
   addEventListener('message', function (e) {
     if (e.origin !== 'https://pay.getpayin.com') return; // your API base origin
-    if (!e.data || e.data.type !== 'paylink_payment') return;
+    if (!e.data || e.data.type !== 'getpayin_payment') return;
     window.location.href = e.data.success ? '/thank-you' : '/checkout?failed=1';
   });
 </script>
@@ -91,22 +91,22 @@ Then embed the returned checkout URL on your page. The `<iframe>` needs `allow="
 
 > The embedding page's origin must exactly match your integration's registered **Origin**, or the browser blocks framing and the message never arrives.
 
-Both credentials are issued in the PayLink dashboard under **Settings → Payment
+Both credentials are issued in the GetPayIn dashboard under **Settings → Payment
 Integrations**. `public_token` is sent on every request; `hash_token` is the
 secret used only to sign — it never leaves your server.
 
 ## Payment operations
 
 ```python
-paylink.payments.void(invoice_id=123)
-paylink.payments.settle(invoice_id=123, amount="50.00")
-paylink.payments.reverse_authorization(invoice_id=123)
+getpayin.payments.void(invoice_id=123)
+getpayin.payments.settle(invoice_id=123, amount="50.00")
+getpayin.payments.reverse_authorization(invoice_id=123)
 
-status = paylink.payments.check_status(invoice_id=123)
+status = getpayin.payments.check_status(invoice_id=123)
 # PaymentResult(invoice_id=123, paid_status='PAID', auth_code='...')
 
 # Refunds are idempotent when you pass an idempotency key — safe to retry:
-refund = paylink.payments.refund(
+refund = getpayin.payments.refund(
     invoice_id=123, amount="10.50", idempotency_key="refund-order-1234"
 )
 # RefundResult(..., refund_amount=10.5)
@@ -115,14 +115,14 @@ refund = paylink.payments.refund(
 ## Card tokenization
 
 ```python
-result = paylink.cards.tokenize(
+result = getpayin.cards.tokenize(
     first_name="Jane", last_name="Doe",
     card_number="4111111111111111",
     card_expiry_month="12", card_expiry_year="2030", card_cvv="123",
     country="EG", address="1 Main St", city="Cairo",
 )
 
-paylink.cards.charge(
+getpayin.cards.charge(
     card_token=result.token,
     initiator="merchant",
     first_name="Jane", last_name="Doe",
@@ -130,7 +130,7 @@ paylink.cards.charge(
     country="EG", address="1 Main St", city="Cairo",
 )
 
-paylink.cards.revoke(card_token=result.token)
+getpayin.cards.revoke(card_token=result.token)
 ```
 
 For `US` and `CA` billing addresses, also pass the state fields the API requires:
@@ -139,7 +139,7 @@ For `US` and `CA` billing addresses, also pass the state fields the API requires
 ## Recurring mandates
 
 ```python
-mandate = paylink.recurring.create(
+mandate = getpayin.recurring.create(
     first_name="Sam", last_name="Doe", email="sam@example.com",
     order_title="Gold subscription",
     order_amount="250.00", currency="USD",
@@ -148,10 +148,10 @@ mandate = paylink.recurring.create(
     idempotency_key="sub-signup-42",
 )
 
-paylink.recurring.status(mandate.mandate_id)
-paylink.recurring.pause(mandate.mandate_id)
-paylink.recurring.resume(mandate.mandate_id)
-paylink.recurring.cancel(mandate.mandate_id)
+getpayin.recurring.status(mandate.mandate_id)
+getpayin.recurring.pause(mandate.mandate_id)
+getpayin.recurring.resume(mandate.mandate_id)
+getpayin.recurring.cancel(mandate.mandate_id)
 ```
 
 ## Idempotency
@@ -172,7 +172,7 @@ and capped at 64 characters.
 
 Reusing a key with a _different_ request — for example `recurring.create` with
 changed terms, or `payments.refund` for a different amount — is rejected as a
-conflict: a `PaylinkApiError` with `is_idempotency_conflict` set (HTTP 409). Only
+conflict: a `GetpayinApiError` with `is_idempotency_conflict` set (HTTP 409). Only
 the methods above honor the header.
 
 ## Verifying webhooks
@@ -182,41 +182,41 @@ recomputes the signature with your `hash_token` and compares in constant time.
 
 ```python
 from flask import Flask, request, abort
-from paylink import PaylinkClient, PaylinkSignatureError
+from getpayin import GetpayinClient, GetpayinSignatureError
 
-paylink = PaylinkClient(public_token=..., hash_token=...)
+getpayin = GetpayinClient(public_token=..., hash_token=...)
 app = Flask(__name__)
 
-@app.post("/webhooks/paylink")
+@app.post("/webhooks/getpayin")
 def webhook():
     try:
-        event = paylink.webhooks.verify(request.get_data(as_text=True))
-    except PaylinkSignatureError:
+        event = getpayin.webhooks.verify(request.get_data(as_text=True))
+    except GetpayinSignatureError:
         abort(400)
     # event.event, event.invoice_id, event.success, event.raw, ...
     return "", 200
 ```
 
-> PayLink webhook signatures carry no timestamp, so verification does not protect
+> GetPayIn webhook signatures carry no timestamp, so verification does not protect
 > against replay. Pair it with your own idempotency keyed on `invoice_id`.
 
 ## Error handling
 
-Every failure is a subclass of `PaylinkError`:
+Every failure is a subclass of `GetpayinError`:
 
 | Error                    | When                                                                                                                                          |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PaylinkConfigError`     | Invalid client configuration (missing tokens, non-positive timeout).                                                                        |
-| `PaylinkApiError`        | The API returned an error. Carries `status`, `errors`, `raw`, `retry_after_seconds`, and the `is_idempotency_conflict` / `is_rate_limited` / `is_forbidden` flags. |
-| `PaylinkSignatureError`  | A webhook signature did not verify.                                                                                                          |
-| `PaylinkConnectionError` | Network failure or timeout (no HTTP response).                                                                                               |
+| `GetpayinConfigError`     | Invalid client configuration (missing tokens, non-positive timeout).                                                                        |
+| `GetpayinApiError`        | The API returned an error. Carries `status`, `errors`, `raw`, `retry_after_seconds`, and the `is_idempotency_conflict` / `is_rate_limited` / `is_forbidden` flags. |
+| `GetpayinSignatureError`  | A webhook signature did not verify.                                                                                                          |
+| `GetpayinConnectionError` | Network failure or timeout (no HTTP response).                                                                                               |
 
 ```python
-from paylink import PaylinkApiError
+from getpayin import GetpayinApiError
 
 try:
-    paylink.payments.refund(invoice_id=123, amount="10.00")
-except PaylinkApiError as error:
+    getpayin.payments.refund(invoice_id=123, amount="10.00")
+except GetpayinApiError as error:
     if error.is_idempotency_conflict:
         ...  # a refund with this idempotency key already exists
 ```
@@ -241,7 +241,7 @@ failed refund surfaces immediately and is yours to handle. Tune or disable
 retries per client with `max_retries` (set `0` to turn them off). `timeout`
 applies to **each attempt**, so worst-case wall time is roughly
 `(max_retries + 1) × timeout` plus backoff. For requests the SDK will not replay,
-`PaylinkApiError.retry_after_seconds` exposes the server's backoff hint.
+`GetpayinApiError.retry_after_seconds` exposes the server's backoff hint.
 
 ## Amounts and precision
 
@@ -252,21 +252,21 @@ Numbers are accepted and stringified, but strings give you full control.
 ## Custom transport
 
 The default transport uses the standard library. Inject any callable matching
-`paylink.Transport` — for a proxy-aware or connection-pooled HTTP client, or a
+`getpayin.Transport` — for a proxy-aware or connection-pooled HTTP client, or a
 mock in tests:
 
 ```python
 def transport(method, url, headers, body, timeout):
     resp = requests.request(method, url, headers=headers, data=body, timeout=timeout)
-    return paylink.HttpResponse(status=resp.status_code, text=resp.text, headers=dict(resp.headers))
+    return getpayin.HttpResponse(status=resp.status_code, text=resp.text, headers=dict(resp.headers))
 
-paylink = PaylinkClient(public_token=..., hash_token=..., transport=transport)
+getpayin = GetpayinClient(public_token=..., hash_token=..., transport=transport)
 ```
 
 ## API reference
 
 The full HTTP API — endpoints, fields, error codes, and test cards — is
-documented in the PayLink API reference:
+documented in the GetPayIn API reference:
 <https://pay.getpayin.com/docs/payment_integration/index.html>
 
 ## Contributing

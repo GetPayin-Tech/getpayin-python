@@ -7,7 +7,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Callable, Mapping, Optional
 
-from .errors import PaylinkConfigError
+from .errors import GetpayinConfigError
 
 __all__ = ["HttpResponse", "Transport", "ResolvedConfig", "resolve_config"]
 
@@ -39,7 +39,7 @@ class HttpResponse:
 
 #: A transport sends one request and returns an :class:`HttpResponse`. It must
 #: raise on a network failure or timeout (the SDK wraps that in a
-#: ``PaylinkConnectionError``). Inject one to mock the network in tests or to use
+#: ``GetpayinConnectionError``). Inject one to mock the network in tests or to use
 #: a proxy-aware HTTP client.
 Transport = Callable[[str, str, Mapping[str, str], Optional[bytes], float], HttpResponse]
 
@@ -80,10 +80,10 @@ def resolve_config(
     secret = _require_non_empty(hash_token, "hash_token")
 
     if not isinstance(timeout, (int, float)) or isinstance(timeout, bool) or timeout <= 0:
-        raise PaylinkConfigError("timeout must be a positive number of seconds.")
+        raise GetpayinConfigError("timeout must be a positive number of seconds.")
 
     if not isinstance(max_retries, int) or isinstance(max_retries, bool) or max_retries < 0:
-        raise PaylinkConfigError("max_retries must be a non-negative integer.")
+        raise GetpayinConfigError("max_retries must be a non-negative integer.")
 
     resolved_transport = transport
     if resolved_transport is None:
@@ -103,5 +103,5 @@ def resolve_config(
 
 def _require_non_empty(value: Optional[str], name: str) -> str:
     if not isinstance(value, str) or value.strip() == "":
-        raise PaylinkConfigError(f"{name} is required and must be a non-empty string.")
+        raise GetpayinConfigError(f"{name} is required and must be a non-empty string.")
     return value

@@ -21,14 +21,14 @@ Laravel's `validated()` returns fields in **`rules()` order**, skipping absent
 ones.
 
 Because the SDK uses snake_case parameters that match the wire names, **the order
-of fields in `src/paylink/_field_orders.py` must match the order of keys in the
+of fields in `src/getpayin/_field_orders.py` must match the order of keys in the
 endpoint's FormRequest `rules()`**, minus `token`/`signature` (and
 `payment_mode`, which is sent with `signed=False`).
 
 When you touch an endpoint:
 
 1. Open the matching FormRequest under
-   `app/Http/Requests/Application/ExternalPaymentIntegration/` in the PayLink repo
+   `app/Http/Requests/Application/ExternalPaymentIntegration/` in the GetPayIn repo
    and read `rules()` top to bottom.
 2. Mirror that order in the `EndpointSpec`. `build_signed_body` signs the values
    in that order — order is not something the type checker can verify for you.
@@ -56,7 +56,7 @@ payload and `unset()`s a fixed exclusion list before hashing, so a new webhook
 field is signed if it is added before that `unset()` and unsigned if added after
 (as `auth_code` is).
 
-`_OPTIONAL_SIGNED` in `src/paylink/webhooks.py` must mirror that decision, and
+`_OPTIONAL_SIGNED` in `src/getpayin/webhooks.py` must mirror that decision, and
 because presence is detected with `in payload`, it is a strict either/or:
 
 | Server behaviour                     | `_OPTIONAL_SIGNED`   |
@@ -83,7 +83,7 @@ not retry"; override it only deliberately.
 
 1. Bump the version in **two** places — they must agree:
    - `[project].version` in `pyproject.toml`, and
-   - `__version__` in `src/paylink/_version.py` (the User-Agent would otherwise
+   - `__version__` in `src/getpayin/_version.py` (the User-Agent would otherwise
      report a stale version).
 2. Update `CHANGELOG.md`.
 3. Tag the release `v<version>` and publish to PyPI.

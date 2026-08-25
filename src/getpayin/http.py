@@ -18,13 +18,13 @@ from typing import Any, Dict, Mapping, Optional
 
 from ._version import __version__
 from .config import HttpResponse, ResolvedConfig
-from .errors import PaylinkApiError, PaylinkConnectionError
+from .errors import GetpayinApiError, GetpayinConnectionError
 
 __all__ = ["execute", "USER_AGENT"]
 
 _RETRY_MAX_DELAY_SECONDS = 8.0
 
-USER_AGENT = f"paylink-python/{__version__} python/{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+USER_AGENT = f"getpayin-python/{__version__} python/{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
 
 
 def execute(
@@ -54,7 +54,7 @@ def execute(
                 query=query,
                 idempotency_key=idempotency_key,
             )
-        except (PaylinkApiError, PaylinkConnectionError) as error:
+        except (GetpayinApiError, GetpayinConnectionError) as error:
             if attempt >= max_attempts or not _is_transient(error):
                 raise
             config.sleep(_backoff_seconds(config, error, attempt))
@@ -62,15 +62,15 @@ def execute(
 
 
 def _is_transient(error: Exception) -> bool:
-    if isinstance(error, PaylinkConnectionError):
+    if isinstance(error, GetpayinConnectionError):
         return True
-    if isinstance(error, PaylinkApiError):
+    if isinstance(error, GetpayinApiError):
         return error.status == 429 or error.status >= 500
     return False
 
 
 def _backoff_seconds(config: ResolvedConfig, error: Exception, attempt: int) -> float:
-    if isinstance(error, PaylinkApiError) and error.retry_after_seconds is not None:
+    if isinstance(error, GetpayinApiError) and error.retry_after_seconds is not None:
         return min(error.retry_after_seconds, _RETRY_MAX_DELAY_SECONDS)
 
     ceiling = min(
@@ -105,7 +105,7 @@ def _attempt_request(
     try:
         response = config.transport(method, url, headers, encoded_body, config.timeout)
     except Exception as error:  # noqa: BLE001 - any transport failure is a connection error
-        raise PaylinkConnectionError(f"Request to {path} failed.", cause=error) from error
+        raise GetpayinConnectionError(f"Request to {path} failed.", cause=error) from error
 
     return _handle_response(response, path)
 
@@ -153,15 +153,15 @@ def _to_api_error(
     parsed: Any,
     raw_text: str,
     retry_after_seconds: Optional[float],
-) -> PaylinkApiError:
+) -> GetpayinApiError:
     envelope = parsed if isinstance(parsed, dict) else {}
     nested = envelope.get("data") if isinstance(envelope.get("data"), dict) else {}
     message = _first_string(envelope.get("message"), nested.get("message")) or (
-        f"PayLink API request failed with status {status}."
+        f"GetPayIn API request failed with status {status}."
     )
     errors = envelope.get("errors") if isinstance(envelope.get("errors"), dict) else None
 
-    return PaylinkApiError(
+    return GetpayinApiError(
         message,
         status=status,
         errors=errors,

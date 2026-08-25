@@ -1,4 +1,4 @@
-"""The PayLink integration client."""
+"""The GetPayIn integration client."""
 
 from __future__ import annotations
 
@@ -8,11 +8,11 @@ from .config import Transport, resolve_config
 from .resources import Cards, Invoices, Payments, Recurring, Vcc
 from .webhooks import Webhooks
 
-__all__ = ["PaylinkClient"]
+__all__ = ["GetpayinClient"]
 
 
-class PaylinkClient:
-    """Entry point to the PayLink integration API.
+class GetpayinClient:
+    """Entry point to the GetPayIn integration API.
 
     Construct once with your integration's ``public_token`` and secret
     ``hash_token``, then use the resource namespaces:
@@ -26,10 +26,10 @@ class PaylinkClient:
 
     Example::
 
-        from paylink import PaylinkClient
+        from getpayin import GetpayinClient
 
-        paylink = PaylinkClient(public_token=..., hash_token=...)
-        checkout = paylink.invoices.create(
+        getpayin = GetpayinClient(public_token=..., hash_token=...)
+        checkout = getpayin.invoices.create(
             first_name="John", last_name="Doe", email="john@example.com",
             order_title="Gold Plan", order_amount="250.00", currency="USD",
         )
@@ -42,7 +42,7 @@ class PaylinkClient:
         total wall time can exceed this.
     :param max_retries: how many times to RETRY a failed replay-safe request
         (default 2; ``0`` disables retries).
-    :param transport: custom transport matching :data:`paylink.config.Transport`;
+    :param transport: custom transport matching :data:`getpayin.config.Transport`;
         defaults to a standard-library ``urllib`` transport.
     """
 
@@ -75,6 +75,6 @@ class PaylinkClient:
 
     def __repr__(self) -> str:  # never surface the signing secret
         return (
-            f"PaylinkClient(public_token={self._config.public_token!r}, "
+            f"GetpayinClient(public_token={self._config.public_token!r}, "
             f"base_url={self._config.base_url!r})"
         )

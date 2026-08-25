@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 import unittest
 
-from paylink import PaylinkApiError, PaylinkClient, PaylinkConnectionError
-from paylink.config import HttpResponse
+from getpayin import GetpayinApiError, GetpayinClient, GetpayinConnectionError
+from getpayin.config import HttpResponse
 
 CHECKOUT_OK = HttpResponse(
     status=200,
@@ -36,8 +36,8 @@ class FakeTransport:
         return item
 
 
-def _client(transport: FakeTransport, max_retries: int = 2) -> PaylinkClient:
-    client = PaylinkClient(
+def _client(transport: FakeTransport, max_retries: int = 2) -> GetpayinClient:
+    client = GetpayinClient(
         public_token="p", hash_token="s", max_retries=max_retries, transport=transport
     )
     # Deterministic, instant backoff for tests.
@@ -46,7 +46,7 @@ def _client(transport: FakeTransport, max_retries: int = 2) -> PaylinkClient:
     return client
 
 
-def _invoice(client: PaylinkClient, **overrides):
+def _invoice(client: GetpayinClient, **overrides):
     return client.invoices.create(
         first_name="J", last_name="D", email="j@e.com",
         order_title="X", order_amount="10.00", currency="USD", **overrides,
@@ -70,7 +70,7 @@ class RetryTest(unittest.TestCase):
     def test_bare_charge_is_not_retried(self) -> None:
         transport = FakeTransport(_err(500, message="boom"))
         client = _client(transport)
-        with self.assertRaises(PaylinkApiError) as ctx:
+        with self.assertRaises(GetpayinApiError) as ctx:
             client.vcc.charge(
                 first_name="S", last_name="S", currency_id=1, price="10", product="W",
                 card_number="4111111111111111", card_expiry_month="12", card_expiry_year="2030",
@@ -87,14 +87,14 @@ class RetryTest(unittest.TestCase):
 
     def test_max_retries_zero_disables(self) -> None:
         transport = FakeTransport(_err(429, message="rate"), CHECKOUT_OK)
-        with self.assertRaises(PaylinkApiError):
+        with self.assertRaises(GetpayinApiError):
             _invoice(_client(transport, max_retries=0), idempotency_key="k")
         self.assertEqual(len(transport.calls), 1)
 
     def test_non_transient_error_not_retried(self) -> None:
         transport = FakeTransport(_err(422, message="Invalid signature.", errors={"signature": ["bad"]}))
         client = _client(transport)
-        with self.assertRaises(PaylinkApiError) as ctx:
+        with self.assertRaises(GetpayinApiError) as ctx:
             _invoice(client, idempotency_key="k")
         self.assertEqual(ctx.exception.status, 422)
         self.assertEqual(ctx.exception.errors, {"signature": ["bad"]})
@@ -108,7 +108,7 @@ class RetryTest(unittest.TestCase):
 
     def test_connection_error_surfaces_when_exhausted(self) -> None:
         transport = FakeTransport(ConnectionError("dns"))
-        with self.assertRaises(PaylinkConnectionError):
+        with self.assertRaises(GetpayinConnectionError):
             _invoice(_client(transport, max_retries=0), idempotency_key="k")
 
     def test_error_flags(self) -> None:
@@ -117,13 +117,13 @@ class RetryTest(unittest.TestCase):
         self.assertTrue(_err_obj(403).is_forbidden)
 
 
-def _err_obj(status: int) -> PaylinkApiError:
+def _err_obj(status: int) -> GetpayinApiError:
     transport = FakeTransport(_err(status, message="x"))
     try:
         _invoice(_client(transport, max_retries=0), idempotency_key="k")
-    except PaylinkApiError as error:
+    except GetpayinApiError as error:
         return error
-    raise AssertionError("expected PaylinkApiError")
+    raise AssertionError("expected GetpayinApiError")
 
 
 def _sent_body(transport: FakeTransport) -> dict:

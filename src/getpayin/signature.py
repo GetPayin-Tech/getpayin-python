@@ -18,7 +18,7 @@ def build_signature(ordered_values: Sequence[str], hash_token: str) -> str:
     """HMAC-SHA256 over the empty-string join of the already-ordered values.
 
     Callers are responsible for supplying values in the exact wire order and
-    coercing them with :func:`paylink.coerce.coerce_to_string`.
+    coercing them with :func:`getpayin.coerce.coerce_to_string`.
     """
     concatenated = "".join(ordered_values)
     digest = hmac.new(

@@ -1,7 +1,7 @@
-"""Exception hierarchy for the PayLink SDK.
+"""Exception hierarchy for the GetPayIn SDK.
 
-Every failure raised by the SDK is a subclass of :class:`PaylinkError`, so a
-caller can catch that to handle any PayLink failure generically, or narrow to a
+Every failure raised by the SDK is a subclass of :class:`GetpayinError`, so a
+caller can catch that to handle any GetPayIn failure generically, or narrow to a
 subclass for specific handling.
 """
 
@@ -10,15 +10,15 @@ from __future__ import annotations
 from typing import Any, Mapping, Optional
 
 __all__ = [
-    "PaylinkError",
-    "PaylinkConfigError",
-    "PaylinkApiError",
-    "PaylinkSignatureError",
-    "PaylinkConnectionError",
+    "GetpayinError",
+    "GetpayinConfigError",
+    "GetpayinApiError",
+    "GetpayinSignatureError",
+    "GetpayinConnectionError",
 ]
 
 
-class PaylinkError(Exception):
+class GetpayinError(Exception):
     """Base class for every error raised by the SDK."""
 
     def __init__(self, message: str, *, cause: Optional[BaseException] = None) -> None:
@@ -28,14 +28,14 @@ class PaylinkError(Exception):
             self.__cause__ = cause
 
 
-class PaylinkConfigError(PaylinkError):
+class GetpayinConfigError(GetpayinError):
     """Raised when the client is constructed with missing or invalid configuration.
 
     For example, an empty public/hash token or a non-positive timeout.
     """
 
 
-class PaylinkApiError(PaylinkError):
+class GetpayinApiError(GetpayinError):
     """Raised when the API responds with an error.
 
     The API returned either a non-2xx status or a ``{"success": false}``
@@ -87,14 +87,14 @@ class PaylinkApiError(PaylinkError):
         return self.status == 403
 
 
-class PaylinkSignatureError(PaylinkError):
+class GetpayinSignatureError(GetpayinError):
     """Raised by :meth:`Webhooks.verify` when a webhook signature does not match."""
 
     def __init__(self, message: str = "Webhook signature verification failed.") -> None:
         super().__init__(message)
 
 
-class PaylinkConnectionError(PaylinkError):
+class GetpayinConnectionError(GetpayinError):
     """Raised when the request never produced an HTTP response.
 
     A network failure, DNS error, or the configured timeout elapsing before the

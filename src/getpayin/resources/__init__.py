@@ -1,4 +1,4 @@
-"""Resource namespaces exposed on :class:`~paylink.client.PaylinkClient`."""
+"""Resource namespaces exposed on :class:`~getpayin.client.GetpayinClient`."""
 
 from .cards import Cards
 from .invoices import Invoices

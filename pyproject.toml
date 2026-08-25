@@ -3,14 +3,14 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "paylink"
+name = "getpayin"
 version = "0.2.0"
-description = "Official server-side Python SDK for the PayLink / GetPayIn payment integration API (checkouts, payment operations, card tokens, recurring mandates, webhook verification)."
+description = "Official server-side Python SDK for the GetPayIn / GetPayIn payment integration API (checkouts, payment operations, card tokens, recurring mandates, webhook verification)."
 readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
 authors = [{ name = "GetPayIn", email = "tech@getpayin.com" }]
-keywords = ["paylink", "getpayin", "payments", "payment-gateway", "checkout", "webhooks", "cybersource"]
+keywords = ["getpayin", "getpayin", "payments", "payment-gateway", "checkout", "webhooks", "cybersource"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -25,17 +25,17 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/GetPayin-Tech/paylink-python"
+Homepage = "https://github.com/GetPayin-Tech/getpayin-python"
 Documentation = "https://pay.getpayin.com/docs/payment_integration/index.html"
-Repository = "https://github.com/GetPayin-Tech/paylink-python"
-Changelog = "https://github.com/GetPayin-Tech/paylink-python/blob/main/CHANGELOG.md"
-Issues = "https://github.com/GetPayin-Tech/paylink-python/issues"
+Repository = "https://github.com/GetPayin-Tech/getpayin-python"
+Changelog = "https://github.com/GetPayin-Tech/getpayin-python/blob/main/CHANGELOG.md"
+Issues = "https://github.com/GetPayin-Tech/getpayin-python/issues"
 
 [project.optional-dependencies]
 dev = ["pytest>=7", "mypy>=1.0", "ruff>=0.1"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/paylink"]
+packages = ["src/getpayin"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -43,7 +43,7 @@ testpaths = ["tests"]
 [tool.mypy]
 python_version = "3.8"
 strict = true
-files = ["src/paylink"]
+files = ["src/getpayin"]
 
 [tool.ruff]
 line-length = 100

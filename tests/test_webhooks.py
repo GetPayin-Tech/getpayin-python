@@ -1,9 +1,9 @@
 import json
 import unittest
 
-from paylink import PaylinkClient
-from paylink.errors import PaylinkError, PaylinkSignatureError
-from paylink.signature import build_signature
+from getpayin import GetpayinClient
+from getpayin.errors import GetpayinError, GetpayinSignatureError
+from getpayin.signature import build_signature
 
 HASH = "test_hash_token_abc123"
 
@@ -23,7 +23,7 @@ def _signed(payload: dict, hash_token: str = HASH) -> dict:
 
 class WebhooksTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.client = PaylinkClient(public_token="p", hash_token=HASH)
+        self.client = GetpayinClient(public_token="p", hash_token=HASH)
 
     def test_verify_valid_invoice_paid(self) -> None:
         payload = _signed(
@@ -67,11 +67,11 @@ class WebhooksTest(unittest.TestCase):
         )
         tampered = dict(payload, invoice_status="UNPAID")
         self.assertFalse(self.client.webhooks.is_valid(tampered))
-        with self.assertRaises(PaylinkSignatureError):
+        with self.assertRaises(GetpayinSignatureError):
             self.client.webhooks.verify(tampered)
 
     def test_missing_signature_raises(self) -> None:
-        with self.assertRaises(PaylinkSignatureError):
+        with self.assertRaises(GetpayinSignatureError):
             self.client.webhooks.verify(
                 {"event": "invoice.paid", "success": 1, "invoice_id": 1, "invoice_status": "PAID"}
             )
@@ -86,8 +86,8 @@ class WebhooksTest(unittest.TestCase):
         # Overriding with the correct secret verifies.
         self.assertTrue(self.client.webhooks.is_valid(payload, hash_token="other_secret"))
 
-    def test_invalid_json_raises_paylink_error(self) -> None:
-        with self.assertRaises(PaylinkError):
+    def test_invalid_json_raises_getpayin_error(self) -> None:
+        with self.assertRaises(GetpayinError):
             self.client.webhooks.verify("{not json")
 
 

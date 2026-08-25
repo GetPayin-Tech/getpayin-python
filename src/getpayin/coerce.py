@@ -16,7 +16,7 @@ from __future__ import annotations
 import math
 from typing import Any
 
-from .errors import PaylinkError
+from .errors import GetpayinError
 
 __all__ = ["coerce_to_string"]
 
@@ -38,11 +38,11 @@ def coerce_to_string(value: Any) -> str:
 
     if isinstance(value, float):
         if not math.isfinite(value):
-            raise PaylinkError(f"Cannot serialize non-finite number: {value}")
+            raise GetpayinError(f"Cannot serialize non-finite number: {value}")
         # Render an integer-valued float without a trailing ".0" so it matches a
         # plain integer amount on the wire (and the JS/PHP SDKs).
         if value.is_integer():
             return str(int(value))
         return repr(value)
 
-    raise PaylinkError(f"Cannot serialize value of type {type(value).__name__}.")
+    raise GetpayinError(f"Cannot serialize value of type {type(value).__name__}.")

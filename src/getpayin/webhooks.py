@@ -7,7 +7,7 @@ from typing import Any, Dict, Mapping, Optional, Union
 
 from .coerce import coerce_to_string
 from .config import ResolvedConfig
-from .errors import PaylinkError, PaylinkSignatureError
+from .errors import GetpayinError, GetpayinSignatureError
 from .signature import build_signature, signatures_equal
 from .types import WebhookEvent
 
@@ -42,10 +42,10 @@ class Webhooks:
         """Verify a webhook and return the parsed event.
 
         Accepts the decoded mapping, or the raw JSON string/bytes. Raises
-        :class:`PaylinkSignatureError` if the signature is missing or does not
+        :class:`GetpayinSignatureError` if the signature is missing or does not
         match.
 
-        Note: PayLink webhook signatures carry no timestamp, so this does not
+        Note: GetPayIn webhook signatures carry no timestamp, so this does not
         protect against replay — pair it with your own idempotency on
         ``invoice_id``.
         """
@@ -54,10 +54,10 @@ class Webhooks:
 
         provided = parsed.get("signature")
         if not isinstance(provided, str) or provided == "":
-            raise PaylinkSignatureError("Webhook payload is missing a signature.")
+            raise GetpayinSignatureError("Webhook payload is missing a signature.")
 
         if not signatures_equal(self._compute_signature(parsed, secret), provided):
-            raise PaylinkSignatureError()
+            raise GetpayinSignatureError()
 
         return self._to_event(parsed)
 
@@ -66,7 +66,7 @@ class Webhooks:
         try:
             self.verify(payload, hash_token=hash_token)
             return True
-        except PaylinkSignatureError:
+        except GetpayinSignatureError:
             return False
 
     def _compute_signature(self, payload: Mapping[str, Any], hash_token: str) -> str:
@@ -87,10 +87,10 @@ class Webhooks:
         try:
             decoded = json.loads(raw)
         except ValueError as error:
-            raise PaylinkError("Webhook payload is not valid JSON.", cause=error) from error
+            raise GetpayinError("Webhook payload is not valid JSON.", cause=error) from error
 
         if not isinstance(decoded, dict):
-            raise PaylinkError("Webhook payload must decode to a JSON object.")
+            raise GetpayinError("Webhook payload must decode to a JSON object.")
 
         return decoded
 
