@@ -51,6 +51,8 @@ class WebhookEventType:
     VCC_PAYMENT_FAILED = "vcc.payment_failed"
     CARD_TOKEN_CHARGE_SUCCEEDED = "card_token.charge_succeeded"
     CARD_TOKEN_CHARGE_FAILED = "card_token.charge_failed"
+    CARD_TOKEN_CREATED = "card_token.created"
+    CARD_TOKEN_FAILED = "card_token.failed"
 
 
 @dataclass(frozen=True)
@@ -142,7 +144,12 @@ class MandateActionResult:
 
 @dataclass(frozen=True)
 class WebhookEvent:
-    """A verified webhook event with snake_case fields; ``raw`` holds the body."""
+    """A verified webhook event with snake_case fields; ``raw`` holds the body.
+
+    The card fields are filled only on ``card_token.created``, and only once the
+    card was actually vaulted: a ``card_token.failed`` event carries the
+    tokenisation and nothing else.
+    """
 
     event: str
     success: bool
@@ -156,3 +163,9 @@ class WebhookEvent:
     subscription_status: Optional[str] = None
     event_triggered_at: Optional[str] = None
     timezone: Optional[str] = None
+    tokenization_id: Optional[str] = None
+    card_token: Optional[str] = None
+    card_brand: Optional[str] = None
+    card_last4: Optional[str] = None
+    card_exp_month: Optional[str] = None
+    card_exp_year: Optional[str] = None

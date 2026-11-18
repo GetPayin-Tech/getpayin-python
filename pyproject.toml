@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "getpayin"
-version = "0.2.0"
+version = "0.3.0"
 description = "Official server-side Python SDK for the GetPayIn / GetPayIn payment integration API (checkouts, payment operations, card tokens, recurring mandates, webhook verification)."
 readme = "README.md"
 requires-python = ">=3.8"
