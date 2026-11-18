@@ -16,8 +16,7 @@ __all__ = ["Webhooks"]
 #: Always-signed webhook fields, in concatenation order (``None`` renders as '').
 _ALWAYS_SIGNED = ("success", "invoice_id", "invoice_status", "message")
 
-# Optionally-signed fields, appended in this order only when the payload carries
-# them.
+# The fields a recurring mandate adds, in the order the server adds them.
 #
 # Membership here is an EITHER/OR, not an additive safety net. The server signs
 # by opt-OUT: ``PaymentIntegrationWebhookJob`` copies the whole payload and
@@ -27,7 +26,28 @@ _ALWAYS_SIGNED = ("success", "invoice_id", "invoice_status", "message")
 # deliberately absent here. For any new field: if the server signs it, it MUST be
 # listed here in the server's order; if the server sends it unsigned, it MUST NOT
 # be listed. See CONTRIBUTING.md.
-_OPTIONAL_SIGNED = ("mandate_id", "external_reference", "subscription_status")
+_MANDATE_SIGNED = ("mandate_id", "external_reference", "subscription_status")
+
+# The fields a card-token event adds, in the order the server adds them.
+#
+# ``card_token.created`` and ``card_token.failed`` are the only events that carry
+# a tokenisation, and both are on by default for every integration. The server
+# writes ``tokenization_id`` and ``external_reference`` first, then the card's
+# details — and only when the card was actually vaulted, so a failed tokenisation
+# signs the first two alone.
+#
+# Order matters because the signature is a separator-less concatenation: on an
+# event with no mandate, ``external_reference`` is signed AFTER
+# ``tokenization_id``, not at the position it holds on a subscription event.
+_TOKENIZATION_SIGNED = (
+    "tokenization_id",
+    "external_reference",
+    "card_token",
+    "card_brand",
+    "card_last4",
+    "card_exp_month",
+    "card_exp_year",
+)
 
 WebhookInput = Union[Mapping[str, Any], str, bytes]
 
@@ -70,13 +90,26 @@ class Webhooks:
             return False
 
     def _compute_signature(self, payload: Mapping[str, Any], hash_token: str) -> str:
-        values = [coerce_to_string(payload.get(key)) for key in _ALWAYS_SIGNED]
+        """Rebuild the expected signature the way the server assembles it.
 
-        for key in _OPTIONAL_SIGNED:
-            if key in payload:
-                values.append(coerce_to_string(payload.get(key)))
+        ``PaymentIntegrationWebhookJob`` appends a whole block at a time — the
+        mandate fields when the invoice belongs to one, the tokenisation fields
+        when the event is about a card — and PHP keeps a key at the position it
+        was first written. A block is therefore gated on its own leading field
+        rather than on the individual fields inside it: ``external_reference``
+        belongs to whichever block introduced it, and is never signed twice.
+        """
+        keys = list(_ALWAYS_SIGNED)
 
-        return build_signature(values, hash_token)
+        for block in (_MANDATE_SIGNED, _TOKENIZATION_SIGNED):
+            if block[0] not in payload:
+                continue
+
+            for key in block:
+                if key in payload and key not in keys:
+                    keys.append(key)
+
+        return build_signature([coerce_to_string(payload.get(key)) for key in keys], hash_token)
 
     def _parse(self, payload: WebhookInput) -> Dict[str, Any]:
         if isinstance(payload, Mapping):
@@ -108,6 +141,12 @@ class Webhooks:
             external_reference=payload.get("external_reference"),
             subscription_status=payload.get("subscription_status"),
             raw=dict(payload),
+            tokenization_id=payload.get("tokenization_id"),
+            card_token=payload.get("card_token"),
+            card_brand=payload.get("card_brand"),
+            card_last4=payload.get("card_last4"),
+            card_exp_month=payload.get("card_exp_month"),
+            card_exp_year=payload.get("card_exp_year"),
         )
 
 
